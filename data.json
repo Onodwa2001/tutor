@@ -1,0 +1,39 @@
+[
+  {
+    "email": "email5@tutor.com",
+    "name": "Angel",
+    "password": "mypassword",
+    "role": "TUTOR",
+    "tutor": {
+      "create": {
+        "bio": "I am a good Arts Tutor",
+        "chargePerHour": 230,
+        "city": "Cape Town",
+        "suburb": "Vosloorus"
+      }
+    }
+  },
+
+  {
+    "email": "email7@gmail.com",
+    "name": "Daniel",
+    "password": "mypassword",
+    "role": "STUDENT",
+    "student": {
+      "create": {
+        "grade": "11"
+      }
+    }
+  },
+
+  {
+    "username": "Danie",
+    "password": "mypassword"
+  },
+
+  {
+    "city": "Cape Town",
+    "suburb": "Khayelitsha"
+  }
+  
+]

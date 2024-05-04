@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User model to represent all types of users
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  name     String?
+  password String
+  role     UserRole // Role to distinguish between different types of users
+
+  // Relations to the other models
+  tutor   Tutor?
+  student Student?
+  admin   Admin?
+
+  connectionRequestsFrom ConnectionRequest[] @relation("FromUser")
+  connectionRequestsTo   ConnectionRequest[] @relation("ToUser")
+
+  connectionsFrom Connection[] @relation(name: "FromUser")
+  connectionsTo   Connection[] @relation(name: "ToUser")
+}
+
+// Enum to specify the role of the user
+enum UserRole {
+  TUTOR
+  STUDENT
+  ADMIN
+}
+
+// Tutor model
+model Tutor {
+  id            String    @id @default(cuid())
+  bio           String?
+  // Relation to the User model
+  user          User      @relation(fields: [id], references: [id])
+  // Many-to-many relation with Subject through TutorSubject
+  subjects      Subject[] @relation("TutorToSubject")
+  chargePerHour Float
+  city          String
+  suburb        String
+}
+
+// Student model
+model Student {
+  id    String  @id @default(cuid())
+  grade String?
+  // Relation to the User model
+  user  User    @relation(fields: [id], references: [id])
+}
+
+// Admin model
+model Admin {
+  id   String  @id @default(cuid())
+  role String?
+  // Relation to the User model
+  user User    @relation(fields: [id], references: [id])
+}
+
+// Subject model
+model Subject {
+  id     String  @id @default(cuid())
+  name   String
+  // Many-to-many relation with Tutor through TutorSubject
+  tutors Tutor[] @relation("TutorToSubject")
+}
+
+// ConnectionRequest model
+model ConnectionRequest {
+  id        String   @id @default(cuid())
+  message   String? // Optional message for the connection request
+  createdAt DateTime @default(now())
+
+  // Foreign key and relation to User (from)
+  fromUserId String
+  from       User   @relation(name: "FromUser", fields: [fromUserId], references: [id])
+
+  // Foreign key and relation to User (to)
+  toUserId String
+  to       User   @relation(name: "ToUser", fields: [toUserId], references: [id])
+}
+
+// Connection model
+model Connection {
+  id        String   @id @default(cuid())
+  message   String? // Optional message for the connection request
+  createdAt DateTime @default(now())
+
+  // Foreign key and relation to User (from)
+  fromUserId String
+  from       User   @relation(name: "FromUser", fields: [fromUserId], references: [id])
+
+  // Foreign key and relation to User (to)
+  toUserId String
+  to       User   @relation(name: "ToUser", fields: [toUserId], references: [id])
+}
