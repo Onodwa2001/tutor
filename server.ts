@@ -21,7 +21,7 @@ const corsOptions = {
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 // Use CORS middleware globally
-app.use(cors());
+app.use(cors(corsOptions));
 // parse application/json
 app.use(bodyParser.json())
 
