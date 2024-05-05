@@ -19,50 +19,75 @@ export const getUserByName = async (username: string) => {
     })
 }
 
+// Exclude keys from user
+function exclude(user: any, keys: any) {
+    return Object.fromEntries(
+      Object.entries(user).filter(([key]) => !keys.includes(key))
+    );
+}
+
 export const search = async (city: string, suburb: string, startingPrice: number, endingPrice: number) => {
-    return await prisma.tutor.findMany({
+    const users = await prisma.user.findMany({
         where: {
             // Combine conditions using the `OR` operator
             OR: [
                 {
-                    // Condition to match tutors with both city, suburb, and chargePerHour
-                    city: {
-                        equals: city,
-                    },
-                    suburb: {
-                        equals: suburb,
-                    },
-                    chargePerHour: {
-                        gt: startingPrice,
-                        lt: endingPrice 
-                    },
+                    tutor: {
+                        // Condition to match tutors with both city, suburb, and chargePerHour
+                        city: {
+                            equals: city,
+                        },
+                        suburb: {
+                            equals: suburb,
+                        },
+                        chargePerHour: {
+                            gt: startingPrice,
+                            lt: endingPrice 
+                        },
+                    }
                 },
                 {
-                    // Condition to match tutors based on city and chargePerHour
-                    city: {
-                        equals: city,
-                    },
-                    chargePerHour: {
-                        gt: startingPrice,
-                        lt: endingPrice 
-                    },
+                    tutor: {
+                        // Condition to match tutors based on city and chargePerHour
+                        city: {
+                            equals: city,
+                        },
+                        chargePerHour: {
+                            gt: startingPrice,
+                            lt: endingPrice 
+                        },
+                    }
                 },
                 {
-                    // Condition to match tutors based on suburb and chargePerHour
-                    suburb: {
-                        equals: suburb,
-                    },
-                    chargePerHour: {
-                        gt: startingPrice,
-                        lt: endingPrice 
-                    },
+                    tutor: {
+                        // Condition to match tutors based on suburb and chargePerHour
+                        suburb: {
+                            equals: suburb,
+                        },
+                        chargePerHour: {
+                            gt: startingPrice,
+                            lt: endingPrice 
+                        },
+                    }
                 },
             ],
-        },
+        }, 
         orderBy: [
-            { city: 'asc' },
-            { suburb: 'asc' },
-            { chargePerHour: 'asc' }
-        ]
+            { tutor: { city: 'asc' } },
+            { tutor: { suburb: 'asc' } },
+            { tutor: { chargePerHour: 'asc' } }
+        ],
+        include: {
+            tutor: true
+        },
     })
+
+    const userWithoutPassword: any = [];
+    
+    users.forEach(user => {
+        userWithoutPassword.push(exclude(user, ['password']));
+    });
+
+    return userWithoutPassword;
+
 }

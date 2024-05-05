@@ -4,15 +4,24 @@ import { getUserByName, search, signUpStudent } from "./services/student";
 import { signUpTutor } from "./services/tutor";
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const cors = require('cors');
 
 const express = require("express");
+const bodyParser = require('body-parser')
 const app = express();
 
-const bodyParser = require('body-parser')
+// Configure CORS middleware
+const corsOptions = {
+    origin: 'http://localhost:3000', // Only allow requests from this origin
+    methods: ['GET', 'POST'], // Allow only GET and POST requests
+    allowedHeaders: ['Content-Type', 'Authorization'], // Only allow these headers
+    credentials: true, // Allow cookies to be sent with the request
+};
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
-
+// Use CORS middleware globally
+app.use(cors());
 // parse application/json
 app.use(bodyParser.json())
 
@@ -32,7 +41,7 @@ app.post('/student/signup', async (req: any, res: any) => {
     }
 });
 
-app.post('/student/signin', async (req: any, res: any) => {
+app.post('/login', async (req: any, res: any) => {
     let { username, password } = req.body;
 
     const user = await getUserByName(username);
@@ -40,16 +49,17 @@ app.post('/student/signin', async (req: any, res: any) => {
     if (!user) {
         return res.status(400).send("Cannot find user");
     }
-
+    
     const hashedPassword = user?.password;
-
+    
     try {
         if (await bcrypt.compare(password, hashedPassword)) {
 
             const accessToken = jwt.sign(user, process.env.JWT_ACCESS_TOKEN_SECRET);
+            console.log(accessToken);
             res.send(accessToken);
         } else {
-            res.send('Not allowed');
+            res.status(401).send('Incorrect credentials');
         }
     } catch {
         res.status(500).send();
@@ -100,13 +110,12 @@ app.post('/acceptConnection/:to', authenticateToken, async (req: any, res: any) 
 
 app.post('/tutor/search', async (req: any, res: any) => {
     const request = req.body;
-    console.log(req.user.name);
-
+    console.log(request);
     try {
         const tutors = await search(request.city, request.suburb, request.startingPrice, request.endingPrice);
         res.json(tutors);
-    } catch {
-        res.status(500).send();
+    } catch (error: any) {
+        res.status(500).send(error.message);
     }
 });
 

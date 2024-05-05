@@ -15,11 +15,13 @@ datasource db {
 
 // User model to represent all types of users
 model User {
-  id       String   @id @default(cuid())
-  email    String   @unique
-  name     String?
-  password String
-  role     UserRole // Role to distinguish between different types of users
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole // Role to distinguish between different types of users
 
   // Relations to the other models
   tutor   Tutor?
