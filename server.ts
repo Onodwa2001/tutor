@@ -12,7 +12,7 @@ const app = express();
 
 // Configure CORS middleware
 const corsOptions = {
-    origin: 'http://localhost:3000', // Only allow requests from this origin
+    origin: 'https://phoenixtutorium.netlify.app/', // Only allow requests from this origin
     methods: ['GET', 'POST'], // Allow only GET and POST requests
     allowedHeaders: ['Content-Type', 'Authorization'], // Only allow these headers
     credentials: true, // Allow cookies to be sent with the request
