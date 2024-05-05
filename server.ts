@@ -25,6 +25,10 @@ app.use(cors());
 // parse application/json
 app.use(bodyParser.json())
 
+app.get('/', (req: any, res: any) => {
+    res.json({ message: "all good" })
+})
+
 app.post('/student/signup', async (req: any, res: any) => {
     let user = req.body;
 
