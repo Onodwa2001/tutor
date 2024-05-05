@@ -26,6 +26,7 @@ app.use(cors());
 app.use(bodyParser.json())
 
 app.get('/', (req: any, res: any) => {
+    console.log('Default endpoint hit');
     res.json({ message: "all good" })
 })
 
