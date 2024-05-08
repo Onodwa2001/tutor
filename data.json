@@ -2,6 +2,8 @@
   {
     "email": "email5@tutor.com",
     "name": "Angel",
+    "firstName": "Mike",
+    "lastName": "Jack",
     "password": "mypassword",
     "role": "TUTOR",
     "tutor": {

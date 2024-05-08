@@ -33,7 +33,7 @@ export const search = async (city: string, suburb: string, startingPrice: number
             OR: [
                 {
                     tutor: {
-                        // Condition to match tutors with both city, suburb, and chargePerHour
+                        // Condition to match tutors with city, suburb, and chargePerHour
                         city: {
                             equals: city,
                         },
