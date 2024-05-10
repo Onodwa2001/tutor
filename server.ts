@@ -2,6 +2,7 @@ import { makeConnection } from "./services/connectionLogic";
 import { sendConnectionRequest } from "./services/connectionReqLogic";
 import { getUserByName, search, signUpStudent } from "./services/student";
 import { signUpTutor } from "./services/tutor";
+import { findUser, updateUser } from "./services/user";
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
@@ -14,7 +15,7 @@ const app = express();
 const corsOptions = {
     origin: 'https://phoenixtutorium.netlify.app', // Only allow requests from this origin
     // origin: 'http://localhost:3001', // Only allow requests from this origin
-    methods: ['GET', 'POST'], // Allow only GET and POST requests
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allow only GET and POST requests
     allowedHeaders: ['Content-Type', 'Authorization'], // Only allow these headers
     credentials: true, // Allow cookies to be sent with the request
 };
@@ -29,6 +30,38 @@ app.use(bodyParser.json())
 app.get('/', (req: any, res: any) => {
     console.log('Default endpoint hit');
     res.json({ message: "all good" })
+});
+
+app.get('/user/get/:id', async (req: any, res: any) => {
+    let id = req.params.id;
+    console.log(id);
+    try {
+        const user = await findUser(id);
+        console.log(user);
+        res.status(200).json(user);
+    } catch(error: any) {
+        console.log(error);
+        res.status(500).send(error.message);
+    }
+});
+
+app.put('/user/update/:id', authenticateToken, async (req: any, res: any) => {
+    const loggedIn = req.user.id;
+    const userIdToUpdate = req.params.id;
+
+    console.log(loggedIn, userIdToUpdate);
+
+    try {
+        if (loggedIn !== userIdToUpdate) {
+            console.log('You cannot update a profile that isn\'t yours bud');
+            return;
+        }
+
+        await updateUser(userIdToUpdate, req.body);
+        res.json('Updated');
+    } catch (error) {
+        res.send(error);
+    }
 })
 
 app.post('/student/signup', async (req: any, res: any) => {
@@ -136,7 +169,6 @@ app.post('/tutor/search', async (req: any, res: any) => {
 // middleware
 function authenticateToken(req: any, res: any, next: any) {
     const authHeader = req.headers['authorization']
-    console.log(authHeader);
     const token = authHeader && authHeader.split(' ')[1];
     
     if (token == null) return res.sendStatus(401);
