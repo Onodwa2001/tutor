@@ -1,5 +1,5 @@
 import { makeConnection } from "./services/connectionLogic";
-import { sendConnectionRequest } from "./services/connectionReqLogic";
+import { connectionRequestAlreadySent, sendConnectionRequest } from "./services/connectionReqLogic";
 import { getUserByName, search, signUpStudent } from "./services/student";
 import { signUpTutor } from "./services/tutor";
 import { findUser, updateUser } from "./services/user";
@@ -13,8 +13,8 @@ const app = express();
 
 // Configure CORS middleware
 const corsOptions = {
-    origin: 'https://phoenixtutorium.netlify.app', // Only allow requests from this origin
-    // origin: 'http://localhost:3001', // Only allow requests from this origin
+    // origin: 'https://phoenixtutorium.netlify.app', // Only allow requests from this origin
+    origin: 'http://localhost:3001', // Only allow requests from this origin
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allow only GET and POST requests
     allowedHeaders: ['Content-Type', 'Authorization'], // Only allow these headers
     credentials: true, // Allow cookies to be sent with the request
@@ -128,20 +128,31 @@ app.post('/connectionRequest/:to', authenticateToken, async (req: any, res: any)
     const message = req.body.message;
 
     try {
-        let success = await sendConnectionRequest("clvr3sszr00004pdvatr7v03y", receiverId, message);
+        let success = await sendConnectionRequest(req.user.id, receiverId, message);
         res.send(success);
     } catch {
         res.status(500).send()
     }
 });
 
+app.get('/checkconnrequest/:id', authenticateToken, async (req: any, res: any) => {
+    const receiverId = req.params.id;
+
+    console.log(req.user.id, receiverId);
+    try {
+        let success = await connectionRequestAlreadySent(req.user.id, receiverId);
+        res.status(200).send(success);
+    } catch (err) {
+        res.status(500).send();
+    }
+});
 
 app.post('/acceptConnection/:to', authenticateToken, async (req: any, res: any) => {
     const receiverId = req.params.to;
     console.log(req.body);
 
     try {
-        let success = await makeConnection("clvr3sszr00004pdvatr7v03y", receiverId);
+        let success = await makeConnection(req.body.id, receiverId);
         res.send(success);
     } catch {
         res.status(500).send();

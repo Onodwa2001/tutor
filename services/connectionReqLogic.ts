@@ -11,3 +11,14 @@ export const sendConnectionRequest = async (fromId: string, toId: string, messag
         },
     });
 }
+
+export const connectionRequestAlreadySent = async (fromUserId: string, toUserId: string) => {
+    const connRequest = await prisma.connectionRequest.findFirst({
+        where: {
+            fromUserId,
+            toUserId,
+        }
+    })
+
+    return connRequest !== null;
+}
