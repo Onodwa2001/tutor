@@ -10,3 +10,29 @@ export const makeConnection = async (fromId: string, toId: string) => {
         },
     });
 }
+
+export const getConnections = async (id: string) => {
+    const users: Array<any> = [];
+
+    console.log(id);
+
+    const connections = await prisma.connection.findMany({
+        where: {
+            fromUserId: id
+        }
+    })
+
+    await Promise.all(connections.map(async (request: any) => {
+        const user = await prisma.user.findFirst({
+            where: {
+                id: request.fromUserId
+            }
+        });
+    
+        users.push(user);
+    }));
+
+    console.log(users);
+
+    return users;
+}

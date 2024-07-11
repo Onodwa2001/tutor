@@ -27,6 +27,9 @@ function exclude(user: any, keys: any) {
 }
 
 export const search = async (city: string, suburb: string, startingPrice: number, endingPrice: number) => {
+
+    // if ()
+
     const users = await prisma.user.findMany({
         where: {
             // Combine conditions using the `OR` operator

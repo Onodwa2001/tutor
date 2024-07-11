@@ -1,5 +1,5 @@
-import { makeConnection } from "./services/connectionLogic";
-import { connectionRequestAlreadySent, sendConnectionRequest } from "./services/connectionReqLogic";
+import { getConnections, makeConnection } from "./services/connectionLogic";
+import { connectionRequestAlreadySent, getFriendRequests, sendConnectionRequest, removeConnectionRequest } from "./services/connectionReqLogic";
 import { getUserByName, search, signUpStudent } from "./services/student";
 import { signUpTutor } from "./services/tutor";
 import { findUser, updateUser } from "./services/user";
@@ -10,11 +10,33 @@ const cors = require('cors');
 const express = require("express");
 const bodyParser = require('body-parser')
 const app = express();
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:3001',
+        method: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    }
+})
+
+io.on("connection", (socket: any) => {
+    console.log(`User connected ${socket.id}`)
+    socket.on("send_message", (data: any) => {
+        socket.broadcast.emit("receive_message", data);
+    });
+})
+
+server.listen(3002, () => {
+    console.log("Socket server is running on port 3002");
+})
 
 // Configure CORS middleware
 const corsOptions = {
-    origin: 'https://phoenixtutorium.netlify.app', // Only allow requests from this origin
-    // origin: 'http://localhost:3001', // Only allow requests from this origin
+    // origin: 'https://phoenixtutorium.netlify.app', // Only allow requests from this origin
+    origin: 'http://localhost:3001', // Only allow requests from this origin
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allow only GET and POST requests
     allowedHeaders: ['Content-Type', 'Authorization'], // Only allow these headers
     credentials: true, // Allow cookies to be sent with the request
@@ -73,7 +95,7 @@ app.post('/student/signup', async (req: any, res: any) => {
         console.log(req.body);
         
         if (createdStudent) {
-            res.json(createdStudent);
+            res.status(201).json(createdStudent);
         }
     } catch {
         res.status(500).send();
@@ -149,13 +171,36 @@ app.get('/checkconnrequest/:id', authenticateToken, async (req: any, res: any) =
 
 app.post('/acceptConnection/:to', authenticateToken, async (req: any, res: any) => {
     const receiverId = req.params.to;
-    console.log(req.body);
+    console.log("logged user that accepted: ", req.user, receiverId);
 
     try {
-        let success = await makeConnection(req.body.id, receiverId);
+        await removeConnectionRequest(receiverId, req.user.id);
+        let success = await makeConnection(req.user.id, receiverId);
         res.send(success);
-    } catch {
-        res.status(500).send();
+    } catch(err: any) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.get('/tutor/get-friend-requests', authenticateToken, async (req: any, res: any) => {
+    const { id } = req.user;
+
+    try {
+        const requests = await getFriendRequests(id);
+        res.status(200).json(requests);
+    } catch(err: any) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.get('/tutor/get-connections', authenticateToken, async (req: any, res: any) => {
+    const { id } = req.user;
+
+    try {
+        const requests = await getConnections(id);
+        res.status(200).json(requests);
+    } catch(err: any) {
+        res.status(500).send(err.message);
     }
 });
 
@@ -173,7 +218,7 @@ app.post('/tutor/search', async (req: any, res: any) => {
         const tutors = await search(request.city, request.suburb, request.startingPrice, request.endingPrice);
         res.json(tutors);
     } catch (error: any) {
-        res.status(500).send(error.message);
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -191,4 +236,6 @@ function authenticateToken(req: any, res: any, next: any) {
     })
 }
 
-app.listen(3000);
+app.listen(3000, () => {
+    console.log("Server is running on port 3000");
+});

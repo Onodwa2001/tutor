@@ -12,6 +12,15 @@ export const sendConnectionRequest = async (fromId: string, toId: string, messag
     });
 }
 
+export const removeConnectionRequest = async (fromId: string, toId: string) => {
+    return await prisma.connectionRequest.deleteMany({
+        where: {
+            fromUserId: fromId,
+            toUserId: toId
+        }
+    });
+}
+
 export const connectionRequestAlreadySent = async (fromUserId: string, toUserId: string) => {
     const connRequest = await prisma.connectionRequest.findFirst({
         where: {
@@ -21,4 +30,30 @@ export const connectionRequestAlreadySent = async (fromUserId: string, toUserId:
     })
 
     return connRequest !== null;
+}
+
+export const getFriendRequests = async (id: string) => {
+    const users: Array<any> = [];
+
+    console.log(id);
+
+    const requests = await prisma.connectionRequest.findMany({
+        where: {
+            toUserId: id
+        }
+    })
+
+    await Promise.all(requests.map(async (request: any) => {
+        const user = await prisma.user.findFirst({
+            where: {
+                id: request.fromUserId
+            }
+        });
+    
+        users.push(user);
+    }));
+
+    console.log(users);
+
+    return users;
 }
