@@ -1,7 +1,8 @@
 import { getConnections, makeConnection } from "./services/connectionLogic";
 import { connectionRequestAlreadySent, getFriendRequests, sendConnectionRequest, removeConnectionRequest } from "./services/connectionReqLogic";
+import { addMessage, getAllMessages } from "./services/messageLogic";
 import { getUserByName, search, signUpStudent } from "./services/student";
-import { signUpTutor } from "./services/tutor";
+import { findTutors, signUpTutor } from "./services/tutor";
 import { findUser, updateUser } from "./services/user";
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -26,6 +27,10 @@ io.on("connection", (socket: any) => {
     console.log(`User connected ${socket.id}`)
     socket.on("send_message", (data: any) => {
         socket.broadcast.emit("receive_message", data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected:', socket.id);
     });
 })
 
@@ -112,6 +117,8 @@ app.post('/login', async (req: any, res: any) => {
     }
     
     const hashedPassword = user?.password;
+
+    console.log(await bcrypt.compare(password, hashedPassword))
     
     try {
         if (await bcrypt.compare(password, hashedPassword)) {
@@ -169,6 +176,15 @@ app.get('/checkconnrequest/:id', authenticateToken, async (req: any, res: any) =
     }
 });
 
+app.get('/tutor/get-all-tutors', async (req: any, res: any) => {
+    try {
+        const tutors = await findTutors();
+        res.status(200).json(tutors);
+    } catch(err: any) {
+        res.status(500).send(err.message);
+    }
+});
+
 app.post('/acceptConnection/:to', authenticateToken, async (req: any, res: any) => {
     const receiverId = req.params.to;
     console.log("logged user that accepted: ", req.user, receiverId);
@@ -217,6 +233,30 @@ app.post('/tutor/search', async (req: any, res: any) => {
     try {
         const tutors = await search(request.city, request.suburb, request.startingPrice, request.endingPrice);
         res.json(tutors);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.post('/message/add/:id', authenticateToken, async (req: any, res: any) => {
+    const { id } = req.params;
+    const { body } = req;
+    const loggedUser = req.user;
+
+    try {
+        const success = await addMessage(loggedUser.id, id, body.content);
+        res.status(200).json(success);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.get('/message/get-all-messages/:receiver', authenticateToken, async (req: any, res: any) => {
+    const { receiver } = req.params;
+
+    try {
+        const messages = await getAllMessages(req.user.id, receiver);
+        res.status(200).json(messages);
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }

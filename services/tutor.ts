@@ -12,3 +12,14 @@ export const signUpTutor = async (user: any) => {
 
     return connectionObject !== null;
 }
+
+export const findTutors = async () => {
+    return await prisma.user.findMany({
+        where: {
+            role: 'TUTOR'
+        },
+        include: {
+            tutor: true
+        }
+    });
+}

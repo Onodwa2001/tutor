@@ -39,6 +39,9 @@ model User {
 
   connectionsFrom Connection[] @relation(name: "FromUser")
   connectionsTo   Connection[] @relation(name: "ToUser")
+
+  sentMessages   Message[] @relation(name: "MessageSender")
+  receivedMessages Message[] @relation(name: "MessageReceiver")
 }
 
 // Enum to specify the role of the user
@@ -113,4 +116,18 @@ model Connection {
   // Foreign key and relation to User (to)
   toUserId String
   to       User   @relation(name: "ToUser", fields: [toUserId], references: [id])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  // Foreign key and relation to User (sender)
+  senderId String
+  sender   User     @relation(name: "MessageSender", fields: [senderId], references: [id])
+
+  // Foreign key and relation to User (receiver)
+  receiverId String
+  receiver   User   @relation(name: "MessageReceiver", fields: [receiverId], references: [id])
 }
