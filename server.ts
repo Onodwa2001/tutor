@@ -18,7 +18,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:3001',
+        // origin: 'http://localhost:3001',
         method: ["GET", "POST", "PUT", "PATCH", "DELETE"]
     }
 })
@@ -40,8 +40,8 @@ server.listen(3002, () => {
 
 // Configure CORS middleware
 const corsOptions = {
-    // origin: 'https://phoenixtutorium.netlify.app', // Only allow requests from this origin
-    origin: 'http://localhost:3001', // Only allow requests from this origin
+    origin: 'https://phoenixtutorium.netlify.app', // Only allow requests from this origin
+    // origin: 'http://localhost:3001', // Only allow requests from this origin
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allow only GET and POST requests
     allowedHeaders: ['Content-Type', 'Authorization'], // Only allow these headers
     credentials: true, // Allow cookies to be sent with the request
