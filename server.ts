@@ -40,7 +40,7 @@ server.listen(3002, () => {
 
 // Configure CORS middleware
 const corsOptions = {
-    origin: 'https://tutor-three.vercel.app', // Only allow requests from this origin
+    origin: 'https://tutor-fe.vercel.app', // Only allow requests from this origin
     // origin: 'http://localhost:3001', // Only allow requests from this origin
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Allow only GET and POST requests
     allowedHeaders: ['Content-Type', 'Authorization'], // Only allow these headers
